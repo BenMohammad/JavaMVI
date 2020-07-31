@@ -21,6 +21,15 @@ public interface TasksIntent extends MviIntent {
             return new AutoValue_TasksIntent_RefreshIntent(forceUpdate);
         }
     }
+    @AutoValue
+    abstract class ActivateTaskIntent implements TasksIntent {
+        abstract Task task();
+
+        public static ActivateTaskIntent create(Task task) {
+            return new AutoValue_TasksIntent_ActivateTaskIntent(task);
+        }
+    }
+
 
     @AutoValue
     abstract class CompleteTaskIntent implements TasksIntent {
