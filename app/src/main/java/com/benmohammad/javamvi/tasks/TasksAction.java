@@ -23,6 +23,15 @@ public interface TasksAction extends MviAction {
             return new AutoValue_TasksAction_LoadTasks(forceUpdate, null);
         }
     }
+    @AutoValue
+    abstract class ActivateTaskAction implements TasksAction {
+        abstract Task task();
+
+        public static ActivateTaskAction create(Task task){
+            return new AutoValue_TasksAction_ActivateTaskAction(task);
+        }
+    }
+
 
     @AutoValue
     abstract class CompleteTaskAction implements TasksAction {
