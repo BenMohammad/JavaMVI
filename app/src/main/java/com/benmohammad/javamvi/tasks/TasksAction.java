@@ -1,0 +1,42 @@
+package com.benmohammad.javamvi.tasks;
+
+import androidx.annotation.Nullable;
+
+import com.benmohammad.javamvi.data.Task;
+import com.benmohammad.javamvi.mvibase.MviAction;
+import com.google.auto.value.AutoValue;
+
+public interface TasksAction extends MviAction {
+
+    @AutoValue
+    abstract class LoadTasks implements TasksAction {
+        public abstract boolean forceUpdate();
+
+        @Nullable
+        public abstract TaskFilterType filterType();
+
+        public static LoadTasks loadAndFilter(boolean forceUpdate, TaskFilterType filterType) {
+            return new AutoValue_TasksAction_LoadTasks(forceUpdate, filterType);
+        }
+
+        public static LoadTasks load(boolean forceUpdate) {
+            return new AutoValue_TasksAction_LoadTasks(forceUpdate, null);
+        }
+    }
+
+    @AutoValue
+    abstract class CompleteTaskAction implements TasksAction {
+        abstract Task task();
+
+        public static CompleteTaskAction create(Task task) {
+            return new AutoValue_TasksAction_CompleteTaskAction(task);
+        }
+    }
+
+    @AutoValue
+    abstract class ClearCompletedTasksAction implements TasksAction {
+        public static ClearCompletedTasksAction create() {
+            return new AutoValue_TasksAction_ClearCompletedTasksAction();
+        }
+    }
+}
