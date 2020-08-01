@@ -2,9 +2,10 @@ package com.benmohammad.javamvi.tasks;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -17,7 +18,6 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelStoreOwner;
 
 import com.benmohammad.javamvi.R;
 import com.benmohammad.javamvi.addedittask.AddEditTaskActivity;
@@ -27,9 +27,6 @@ import com.benmohammad.javamvi.util.TodoViewModelFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.jakewharton.rxbinding2.support.v4.widget.RxSwipeRefreshLayout;
-import com.jakewharton.rxbinding2.view.RxView;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -160,14 +157,98 @@ public class TasksFragment extends Fragment implements MviView<TasksIntent, Task
         });
     }
 
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.task_fragment_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+
+
     private Observable<TasksIntent.ChangeFilterIntent> changeFilterIntent() {
         return changeFilterIntentPublisher;
     }
 
+    private void showLoadTaskError() {
+        showMessage(getString(R.string.loading_tasks_error));
+    }
+
     @Override
     public void render(TasksViewState state) {
+        swipeRefreshLayout.setRefreshing(state.isLoading());
+        if(state.error() != null) {
+            showLoadTaskError();
+            return;
+        }
+        if(state.taskActivated()) showMessage(getString(R.string.task_marked_active));
 
+        if(state.taskComplete()) showMessage(getString(R.string.task_marked_complete));
+
+        if(state.completedTaskCleared()) showMessage(getString(R.string.completed_tasks_cleared));
+
+        if(state.tasks().isEmpty()) {
+            switch(state.taskFilterType()) {
+                case ACTIVE_TASKS:
+                    showNoActiveTasks();
+                    break;
+                case COMPLETED_TASKS:
+                    showNoCompletedTasks();
+                    break;
+                default:
+                    showNoTAsks();
+                    break;
+            }
+        } else {
+            listAdapter.replaceData(state.tasks());
+            tasksView.setVisibility(View.VISIBLE);
+            noTasksView.setVisibility(View.GONE);
+
+            switch(state.taskFilterType()) {
+                case ACTIVE_TASKS:
+                    showActiveFilterLabel();
+                    break;
+                case COMPLETED_TASKS:
+                    showCompletedTaskLabel();
+                    break;
+                default:
+                    showAllTasksLabel();
+            }
+        }
     }
+
+    private void showNoActiveTasks() {
+        showNoTasksView(getResources().getString(R.string.no_tasks_active), R.drawable.ic_check_circle_24dp, true);
+    }
+
+    private void showNoCompletedTasks() {
+        showNoTasksView(getResources().getString(R.string.no_tasks_completed), R.drawable.ic_verified_user_24dp, false);
+    }
+
+    private void showNoTAsks() {
+        showNoTasksView(getResources().getString(R.string.no_tasks_all), R.drawable.ic_assignment_turned_in_24dp, true);
+    }
+
+    private void showNoTasksView(String mainText, int iconRes, boolean showAddView) {
+        tasksView.setVisibility(View.GONE);
+        noTasksView.setVisibility(View.VISIBLE);
+        noTasksMainView.setText(mainText);
+        noTaskIcon.setImageDrawable(getResources().getDrawable(iconRes));
+        noTasksAddView.setVisibility(showAddView ? View.VISIBLE : View.GONE);
+    }
+
+    private void showActiveFilterLabel() {
+        filteringLabelView.setText(getResources().getString(R.string.label_active));
+    }
+
+    private void showCompletedTaskLabel() {
+        filteringLabelView.setText(getResources().getString(R.string.label_completed));
+    }
+
+    private void showAllTasksLabel() {
+        filteringLabelView.setText(getResources().getString(R.string.label_all));
+    }
+
+
 
     private void showDetailsUI(String taskId) {
         Intent intent = new Intent(getContext(), TaskDetailsActivity.class);
