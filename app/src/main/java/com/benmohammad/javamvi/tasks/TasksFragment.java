@@ -26,6 +26,8 @@ import com.benmohammad.javamvi.taskdetail.TaskDetailsActivity;
 import com.benmohammad.javamvi.util.TodoViewModelFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.jakewharton.rxbinding2.support.v4.widget.RxSwipeRefreshLayout;
+import com.jakewharton.rxbinding2.view.RxView;
 
 import org.w3c.dom.Text;
 
@@ -126,9 +128,40 @@ public class TasksFragment extends Fragment implements MviView<TasksIntent, Task
         return root;
     }
 
+
+
     @Override
     public Observable<TasksIntent> intents() {
-        return null;
+        return Observable.merge(initialIntent(), refreshIntent(), adapterIntent(), clearCompletedTaskIntent()).mergeWith(changeFilterIntent());
+    }
+
+    private Observable<TasksIntent.InitialIntent> initialIntent() {
+        return Observable.just(TasksIntent.InitialIntent.create());
+    }
+
+    private Observable<TasksIntent.RefreshIntent> refreshIntent(){
+        return  RxSwipeRefreshLayout.refreshes(swipeRefreshLayout)
+                .map(ignored -> TasksIntent.RefreshIntent.create(false))
+                .mergeWith(refreshIntentPublisher);
+    }
+
+    private Observable<TasksIntent.ClearCompletedTaskIntent> clearCompletedTaskIntent() {
+        return completedTaskIntentPublisher;
+    }
+
+
+    private Observable<TasksIntent> adapterIntent() {
+        return listAdapter.getTAskToggleObservable().map(task -> {
+            if(!task.isCompleted()) {
+                return TasksIntent.CompleteTaskIntent.create(task);
+            } else {
+                return TasksIntent.ActivateTaskIntent.create(task);
+            }
+        });
+    }
+
+    private Observable<TasksIntent.ChangeFilterIntent> changeFilterIntent() {
+        return changeFilterIntentPublisher;
     }
 
     @Override
