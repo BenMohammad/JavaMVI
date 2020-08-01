@@ -6,11 +6,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -163,7 +165,41 @@ public class TasksFragment extends Fragment implements MviView<TasksIntent, Task
         super.onCreateOptionsMenu(menu, inflater);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.menu_clear:
+                completedTaskIntentPublisher.onNext(TasksIntent.ClearCompletedTaskIntent.create());
+                break;
+            case R.id.menu_filter:
+                showFilterPopupMenu();
+                break;
+            case R.id.menu_refresh:
+                refreshIntentPublisher.onNext(TasksIntent.RefreshIntent.create(true));
+                break;
+        }
+        return true;
+    }
 
+    private void showFilterPopupMenu() {
+        PopupMenu popupMenu = new PopupMenu(getContext(), getActivity().findViewById(R.id.menu_filter));
+        popupMenu.getMenuInflater().inflate(R.menu.filter_tasks, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(item -> {
+            switch(item.getItemId()) {
+                case R.id.active:
+                    changeFilterIntentPublisher.onNext(TasksIntent.ChangeFilterIntent.create(TaskFilterType.ACTIVE_TASKS));
+                    break;
+                case R.id.completed:
+                    changeFilterIntentPublisher.onNext(TasksIntent.ChangeFilterIntent.create(TaskFilterType.COMPLETED_TASKS));
+                    break;
+                default:
+                    changeFilterIntentPublisher.onNext(TasksIntent.ChangeFilterIntent.create(TaskFilterType.ALL_TASKS));
+                    break;
+            }
+            return true;
+        });
+        popupMenu.show();
+    }
 
     private Observable<TasksIntent.ChangeFilterIntent> changeFilterIntent() {
         return changeFilterIntentPublisher;
