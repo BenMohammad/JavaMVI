@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 import com.benmohammad.javamvi.data.Task;
 import com.benmohammad.javamvi.mvibase.MviIntent;
 import com.benmohammad.javamvi.mvibase.MviViewModel;
+import com.benmohammad.javamvi.util.UiNotification;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
@@ -59,7 +60,7 @@ public class TaskDetailViewModel extends ViewModel implements MviViewModel<TaskD
     private Observable<TaskDetailViewState> compose() {
         return intentSubject
                 .compose(intentFilter)
-                .map(this::addFromIntent)
+                .map(this::actionFromIntent)
                 .compose(actionProcessorHolder.actionProcessor)
                 .scan(TaskDetailViewState.idle(), reducer)
                 .distinctUntilChanged()
@@ -119,11 +120,46 @@ public class TaskDetailViewModel extends ViewModel implements MviViewModel<TaskD
                     return stateBuilder.error(error).build();
                 case IN_FLIGHT:
                     stateBuilder.loading(true);
-                    return stateBuilder;
+                    return stateBuilder.build();
             }
         }
         if(result instanceof TaskDetailResult.DeleteTaskResult) {
-            AutoValue_TaskDetailAction_DeleteTask
-        }
+            TaskDetailResult.DeleteTaskResult deleteTaskResult = (TaskDetailResult.DeleteTaskResult) result;
+            switch(deleteTaskResult.status()) {
+                case SUCCESS:
+                    return stateBuilder.taskDeleted(true).build();
+                case FAILURE:
+                    return stateBuilder.error(deleteTaskResult.error()).build();
+                case IN_FLIGHT:
+                    return stateBuilder.build();
             }
+        } else if(result instanceof TaskDetailResult.ActivateTaskResult) {
+            TaskDetailResult.ActivateTaskResult activateTaskResult = (TaskDetailResult.ActivateTaskResult) result;
+            switch (activateTaskResult.status()) {
+                case SUCCESS:
+                    return stateBuilder
+                            .taskActivated(activateTaskResult.uiNotificationStatus() == UiNotification.SHOW)
+                            .active(true)
+                            .build();
+                case FAILURE:
+                    return stateBuilder.error(activateTaskResult.error()).build();
+                case IN_FLIGHT:
+                    return stateBuilder.build();
+            }
+        }else if(result instanceof TaskDetailResult.CompleteTaskResult) {
+            TaskDetailResult.CompleteTaskResult completeTaskResult = (TaskDetailResult.CompleteTaskResult) result;
+            switch(completeTaskResult.status()) {
+                case SUCCESS:
+                    return stateBuilder
+                            .taskComplete(completeTaskResult.uiNotificationStatus() == UiNotification.SHOW)
+                            .active(false)
+                            .build();
+                case FAILURE:
+                    return stateBuilder.error(completeTaskResult.error()).build();
+                case IN_FLIGHT:
+                    return stateBuilder.build();
+            }
+        }
+        throw new IllegalArgumentException("Mishandled result....");
+            };
 }
