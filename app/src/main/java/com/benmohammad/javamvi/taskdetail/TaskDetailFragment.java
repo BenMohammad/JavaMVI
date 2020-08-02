@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -20,6 +23,7 @@ import com.benmohammad.javamvi.addedittask.AddEditTaskFragment;
 import com.benmohammad.javamvi.mvibase.MviView;
 import com.benmohammad.javamvi.util.TodoViewModelFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.jakewharton.rxbinding2.view.RxView;
 
 import java.util.concurrent.TimeUnit;
@@ -160,32 +164,35 @@ public class TaskDetailFragment extends Fragment implements MviView<TaskDetailIn
     }
 
     private void showTaskMarkedActive() {
+        Snackbar.make(getView(), getString(R.string.task_marked_active), Snackbar.LENGTH_SHORT).show();
 
     }
 
     private void showTaskMarkedComplete() {
-
+        Snackbar.make(getView(), getString(R.string.task_marked_complete), Snackbar.LENGTH_SHORT).show();
     }
 
     private void showActive(boolean active) {
-
+        detailsCompleteStatus.setChecked(!active);
     }
 
     private void hideDescription() {
-
+        detailsDescription.setVisibility(View.GONE);
     }
 
     private void showDescription(String description) {
-
+        detailsDescription.setVisibility(View.VISIBLE);
+        detailsDescription.setText(description);
 
     }
 
     private void hideTitle() {
-
+        detailsTitle.setVisibility(View.GONE);
     }
 
     private void showTitle(String title) {
-
+        detailsTitle.setVisibility(View.VISIBLE);
+        detailsTitle.setText(title);
     }
 
     @Override
@@ -204,5 +211,21 @@ public class TaskDetailFragment extends Fragment implements MviView<TaskDetailIn
             detailsTitle.setText("");
             detailsDescription.setText(getString(R.string.loading));
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_delete:
+                deleteTaskPublisher.onNext(TaskDetailIntent.DeleteTask.create(getArgumentTaskId()));
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.taskdetail_fragment_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 }
