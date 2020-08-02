@@ -68,7 +68,7 @@ public class TaskDetailFragment extends Fragment implements MviView<TaskDetailIn
         detailsDescription = root.findViewById(R.id.task_detail_description);
         detailsCompleteStatus = root.findViewById(R.id.task_detail_complete);
 
-        fab = (FloatingActionButton) getActivity().findViewById(R.id.fab_edit_task);
+        fab = getActivity().findViewById(R.id.fab_edit_task);
 
         return root;
     }
@@ -119,7 +119,7 @@ public class TaskDetailFragment extends Fragment implements MviView<TaskDetailIn
     private Observable<TaskDetailIntent> checkBoxIntent() {
         return RxView.clicks(detailsCompleteStatus).map(
                 activated ->{
-                    if(!detailsCompleteStatus.isChecked()) {
+                    if(detailsCompleteStatus.isChecked()) {
                         return TaskDetailIntent.CompleteTaskIntent.create(getArgumentTaskId());
                     } else {
                         return TaskDetailIntent.ActivateTaskIntent.create(getArgumentTaskId());

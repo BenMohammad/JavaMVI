@@ -9,7 +9,6 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
 
 import static autovalue.shaded.com.google$.common.base.$Preconditions.checkNotNull;
-import static autovalue.shaded.com.google$.common.base.$Preconditions.checkPositionIndex;
 import static com.benmohammad.javamvi.util.ObservableUtils.pairWithDelay;
 
 public class TaskDetailActionProcessorHolder {
@@ -43,9 +42,9 @@ public class TaskDetailActionProcessorHolder {
                     tasksRepository.completeTask(action.taskId())
                     .andThen(tasksRepository.getTask(action.taskId()))
                     .toObservable()
-                    .flatMap(tasks ->
+                    .flatMap(task ->
                             pairWithDelay(
-                                    TaskDetailResult.CompleteTaskResult.success(tasks),
+                                    TaskDetailResult.CompleteTaskResult.success(task),
                                     TaskDetailResult.CompleteTaskResult.hideUiNotification()
                             )))
             .onErrorReturn(TaskDetailResult.CompleteTaskResult::failure)
@@ -58,9 +57,9 @@ public class TaskDetailActionProcessorHolder {
                    tasksRepository.activateTask(action.taskId())
                     .andThen(tasksRepository.getTask(action.taskId())
                             .toObservable()
-                            .flatMap(tasks ->
+                            .flatMap(task ->
                                     pairWithDelay(
-                                            TaskDetailResult.ActivateTaskResult.success(tasks),
+                                            TaskDetailResult.ActivateTaskResult.success(task),
                                             TaskDetailResult.ActivateTaskResult.hideUiNotification()
                                     ))
                         .onErrorReturn(TaskDetailResult.ActivateTaskResult::failure)
