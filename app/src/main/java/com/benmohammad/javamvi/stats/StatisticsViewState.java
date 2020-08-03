@@ -2,10 +2,11 @@ package com.benmohammad.javamvi.stats;
 
 import androidx.annotation.Nullable;
 
+import com.benmohammad.javamvi.mvibase.MviViewState;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
-public abstract class StatisticsViewState {
+public abstract class StatisticsViewState implements MviViewState {
 
     abstract boolean isLoading();
     abstract int activeCount();
