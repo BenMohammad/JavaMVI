@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.benmohammad.javamvi.addedittask.AddEditTaskActionProcessorHolder;
+import com.benmohammad.javamvi.addedittask.AddEditTaskViewModel;
 import com.benmohammad.javamvi.injection.Injection;
 import com.benmohammad.javamvi.taskdetail.TaskDetailActionProcessorHolder;
 import com.benmohammad.javamvi.taskdetail.TaskDetailViewModel;
@@ -47,8 +49,12 @@ public class TodoViewModelFactory implements ViewModelProvider.Factory {
                             Injection.provideTasksRepository(context),
                             Injection.provideSchedulerProvider()));
         }
-
-
+        if(modelClass == AddEditTaskViewModel.class) {
+            return (T) new AddEditTaskViewModel(
+                    new AddEditTaskActionProcessorHolder(
+                            Injection.provideTasksRepository(context),
+                            Injection.provideSchedulerProvider()));
+        }
 
         throw  new IllegalArgumentException("wrong model class");
     }
